@@ -1,0 +1,212 @@
+﻿<section class="container mt-4">
+    <h2>Patient Data</h2>
+    <form id="patientForm" class="row g-3">
+        <div class="col-md-6">
+            <label for="patientID" class="form-label">Patient ID</label>
+            <input type="text" class="form-control" id="patientID" placeholder="Enter Patient ID" disabled>
+        </div>
+        <div class="col-md-6">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" class="form-control" id="age" placeholder="Enter Age">
+        </div>
+        <div class="col-md-12">
+            <label for="patientName" class="form-label">Patient Name</label>
+            <input type="text" class="form-control" id="patientName" placeholder="Enter Patient Name">
+        </div>
+        <div class="col-md-6">
+            <label for="address" class="form-label">Address</label>
+            <input type="text" class="form-control" id="address" placeholder="Enter Address">
+        </div>
+        <div class="col-md-6">
+            <label for="phoneNo" class="form-label">Phone No</label>
+            <input type="text" class="form-control" id="phoneNo" placeholder="Enter Phone Number">
+        </div>
+        <div class="col-md-4">
+            <label for="gender" class="form-label">Gender</label>
+            <select class="form-select" id="gender">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="maritalStatus" class="form-label">Marital Status</label>
+            <select class="form-select" id="maritalStatus">
+                <option value="">Select Marital Status</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="bloodGroup" class="form-label">Blood Group</label>
+            <select class="form-select" id="bloodGroup">
+                <option value="">Select Blood Group</option>
+                <option value="A+">A+</option>
+                <option value="B+">B+</option>
+                <!-- Add other blood groups -->
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-evenly">
+            <button type="button" id="addPatient" class="btn btn-primary">Add</button>
+            <button type="button" id="savePatient" class="btn btn-success">Save</button>
+            <button type="button" id="searchPatient" class="btn btn-info">Search</button>
+            <button type="button" id="deletePatient" class="btn btn-danger">Delete</button>
+            <button type="button" id="cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+    </form>
+</section>
+
+<!-- Modal for displaying patient search results -->
+<div class="modal fade" id="patientSearchModal" tabindex="-1" aria-labelledby="patientSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="patientSearchModalLabel">Search Patients</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table id="patientDataTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Address</th>
+                            <th>Phone No</th>
+                            <th>Gender</th>
+                            <th>Marital Status</th>
+                            <th>Blood Group</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+
+        var table = $('#patientDataTable').DataTable({
+            "ajax": {
+                "url": "/patient/all", // Adjust this URL to your endpoint
+                "dataSrc": ""
+            },
+            "columns": [
+                { "data": "patientID" },
+                { "data": "patientName" },
+                { "data": "age" },
+                { "data": "address" },
+                { "data": "phoneNo" },
+                { "data": "gender" },
+                { "data": "maritalStatus" },
+                { "data": "bloodGroup" }
+            ]
+        });
+        $('#patientDataTable tbody').on('click', 'tr', function () {
+            var data = table.row(this).data();
+            $('#patientID').val(data.patientID);
+            $('#patientName').val(data.patientName);
+            $('#age').val(data.age);
+            $('#address').val(data.address);
+            $('#phoneNo').val(data.phoneNo);
+            $('#gender').val(data.gender);
+            $('#maritalStatus').val(data.maritalStatus);
+            $('#bloodGroup').val(data.bloodGroup);
+            $('#patientSearchModal').modal('hide');
+        });
+
+
+
+        function saveOrUpdate(){
+            var patientId = $('#patientID').val().trim();  // Assuming there's an input field for Patient ID
+
+            // Prepare the patient data from form inputs
+            var patientData = {
+                PatientID: patientId != '' ? patientId : 0,
+                PatientName: $('#patientName').val().trim(),
+                Address: $('#address').val().trim(),
+                PhoneNo: $('#phoneNo').val().trim(),
+                Gender: $('#gender').val(),
+                Age: parseInt($('#age').val()),
+                MaritalStatus: $('#maritalStatus').val(),
+                BloodGroup: $('#bloodGroup').val()
+            };
+
+            // Define the API endpoint and method based on whether it's an add or update action
+            var apiEndpoint = patientId ? "/Patient/UpdatePatient" : "/Patient/AddPatient";
+            var method = patientId ? "PUT" : "POST";
+
+            const payload = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(patientData)
+            };
+
+            // Perform the AJAX request
+            fetch(apiEndpoint, payload)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    const verb = patientId == '' ? 'saved' : 'updated';
+                        toastr.success(`Patient data ${verb} successfully.`);
+                })
+                .catch(error => {
+                    toastr.error('Error saving patient data: ' + error.message);
+                    console.error('Error:', error);
+                });
+        }
+
+        $('#addPatient').click(function () {
+            saveOrUpdate();
+        });
+
+        $('#savePatient').click(function () {
+            var patientId = $('#patientID').val().trim();
+            if (!patientId) return;
+            saveOrUpdate();
+        });
+
+        $('#searchPatient').click(function () {
+            // Code to search for a patient
+            $('#patientSearchModal').modal('show');
+        });
+
+        $('#deletePatient').click(function () {
+            var patientId = $('#patientID').val(); // Assumes the patient ID is stored in an input field with id 'patientID'
+
+            if (!patientId) {
+                toastr.error('No patient ID provided');
+                return; // Prevent deletion if no ID is provided
+            }
+
+            fetch('/Patient/delete/' + patientId, {
+                method: 'DELETE',
+            }).then(response => {
+                    if (response.ok) {
+                        toastr.success('Patient deleted successfully')
+                    } else {
+                        throw new Error('Something went wrong with the delete request');
+                    }
+                })
+                .catch(error => {
+                    toastr.error('Error deleting patient: ' + error.message);
+                    console.error('Error:', error);
+                });
+        });
+
+
+        $('#cancel').click(function () {
+            // Code to reset/cancel form
+            $('form#patientForm')[0].reset();
+        });
+    });
+
+</script>
