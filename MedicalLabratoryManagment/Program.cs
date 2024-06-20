@@ -1,7 +1,28 @@
+using MedicalLabratoryManagment.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<ApplicationDbContext>(
+        options => options.UseSqlServer(builder.Configuration.GetConnectionString("defaultConnection"))
+    );
+
+
+var types = Assembly.GetExecutingAssembly().GetTypes();
+var serviceTypes = types
+            .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Service"));
+
+// Register each service type
+foreach (var serviceType in serviceTypes) {
+    var interfaceType = types.FirstOrDefault(t => t.IsInterface && t.Name == "I" + serviceType.Name);
+    // Register as a transient service
+    if (interfaceType != null) {
+        builder.Services.AddTransient(interfaceType, serviceType);
+    }
+}
 
 var app = builder.Build();
 
@@ -21,6 +42,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Index}/{id?}");
 
 app.Run();
