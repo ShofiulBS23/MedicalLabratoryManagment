@@ -1,0 +1,118 @@
+﻿<style>
+    #resultDetails {
+        margin-top: 20px;
+    }
+
+    #resultDetails .container {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .table-sm th, .table-sm td {
+        padding: .3rem; /* Make table cells smaller for a more compact look */
+    }
+
+    .btn {
+        margin-right: 5px;
+    }
+
+
+</style>
+
+
+<section id="resultDetails" class="container mt-5">
+    <div class="border p-3 row">
+        <div class="col-md-6 col-12">
+            <h4 class="mb-3">Result Details</h4>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="billNo">Bill No:</label>
+                    <input type="text" class="form-control" id="billNo" value="3">
+                </div>
+                <div class="form-group col-md-12">
+                    <label for="patientId">Patient ID:</label>
+                    <input type="text" class="form-control" id="patientId" value="3">
+                </div>
+                <div class="form-group col-md-12">
+                    <label for="patientName">Patient Name:</label>
+                    <input type="text" class="form-control" id="patientName" value="FAIZANlksdf">
+                </div>
+                <div class="form-group col-md-12">
+                    <label for="date">Date:</label>
+                    <input type="date" class="form-control" id="date" value="2024-06-21">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="gender">Gender:</label>
+                    <select class="form-control" id="gender">
+                        <option>Female</option>
+                        <option>Male</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-12">
+                    <label for="age">Age:</label>
+                    <input type="number" class="form-control" id="age" value="212">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-12">
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm" id="resultTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Test Name</th>
+                            <th>Result</th>
+                            <th>Sample Unit</th>
+                            <th>State</th>
+                            <th>Mini Range</th>
+                            <th>Max Range</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>HB</td>
+                            <td><input type="text" class="form-control" value="fl"></td>
+                            <td>10</td>
+                            <td>30</td>
+                            <td>RBC</td>
+                            <td>20</td>
+                        </tr>
+                        <!-- More rows can be added similarly -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="form-group d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary mr-2">Cancel</button>
+            <button type="button" class="btn btn-danger mr-2">Delete</button>
+            <button type="button" class="btn btn-warning mr-2">Search</button>
+            <button type="button" class="btn btn-success mr-2">Save</button>
+            <button type="button" class="btn btn-info mr-2">Add</button>
+            <button type="button" class="btn btn-primary">Print</button>
+        </div>
+    </div>
+</section>
+
+
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('#resultTable').DataTable({
+                responsive: true,
+                "paging": true,  // Enable pagination
+                "ordering": true,  // Allow column sorting
+                "info": true,  // Show table information
+                "searching": false  // Disable DataTables default search box since a custom one may be used
+            });
+
+            $('.btn-primary').click(function () {
+                window.print(); // Enable print button functionality
+            });
+        });
+    </script>
+}
