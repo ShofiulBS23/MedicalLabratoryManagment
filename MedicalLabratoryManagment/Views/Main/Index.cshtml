@@ -1,0 +1,52 @@
+﻿<style>
+
+
+</style>
+
+<div>
+    <a class="navbar-brand" href="#">
+        <img src="~/images//logo.png" alt="Logo" style="width:30px;"> Medical Laboratory Management System
+    </a>
+</div>
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav ml-auto">
+            <a class="nav-item nav-link" href="#" data-url="/Patient/Index" id="nav-patient">Patient</a>
+            <a class="nav-item nav-link" href="#" data-url="/Bill/Index" id="nav-bills">Bills</a>
+            <a class="nav-item nav-link" href="#" data-url="/Result/Index" id="nav-result">Result</a>
+            <a class="nav-item nav-link" href="#" data-url="/Test/Index" id="nav-test">Test</a>
+            <a class="nav-item nav-link" href="#" data-url="/UserSettings/Index" id="nav-settings">Settings</a>
+            <a class="nav-item nav-link" href="/" id="nav-logout">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-3">
+    <div id="content-area" class=" style="min-height: 500px;">
+        <!-- Dynamic content will be loaded here -->
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $(".nav-link").click(function (e) {
+                e.preventDefault();
+                const url = $(this).data('url');
+
+                if ($(this).attr("id") === "nav-logout") {
+                    window.location.href = '/';
+                } else {
+                    $("#content-area").load(url); // Load the partial view from the specified URL
+                }
+            });
+        });
+    </script>
+}

@@ -7,23 +7,23 @@
         </div>
         <div class="col-md-6">
             <label for="age" class="form-label">Age</label>
-            <input type="number" class="form-control" id="age" placeholder="Enter Age">
+            <input type="number" class="form-control" id="age" placeholder="Enter Age" min="0" disabled>
         </div>
         <div class="col-md-12">
             <label for="patientName" class="form-label">Patient Name</label>
-            <input type="text" class="form-control" id="patientName" placeholder="Enter Patient Name">
+            <input type="text" class="form-control" id="patientName" placeholder="Enter Patient Name" disabled>
         </div>
         <div class="col-md-6">
             <label for="address" class="form-label">Address</label>
-            <input type="text" class="form-control" id="address" placeholder="Enter Address">
+            <input type="text" class="form-control" id="address" placeholder="Enter Address" disabled>
         </div>
         <div class="col-md-6">
             <label for="phoneNo" class="form-label">Phone No</label>
-            <input type="text" class="form-control" id="phoneNo" placeholder="Enter Phone Number">
+            <input type="text" class="form-control" id="phoneNo" placeholder="Enter Phone Number" disabled>
         </div>
         <div class="col-md-4">
             <label for="gender" class="form-label">Gender</label>
-            <select class="form-select" id="gender">
+            <select class="form-select" id="gender" disabled>
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -31,7 +31,7 @@
         </div>
         <div class="col-md-4">
             <label for="maritalStatus" class="form-label">Marital Status</label>
-            <select class="form-select" id="maritalStatus">
+            <select class="form-select" id="maritalStatus" disabled>
                 <option value="">Select Marital Status</option>
                 <option value="Single">Single</option>
                 <option value="Married">Married</option>
@@ -39,7 +39,7 @@
         </div>
         <div class="col-md-4">
             <label for="bloodGroup" class="form-label">Blood Group</label>
-            <select class="form-select" id="bloodGroup">
+            <select class="form-select" id="bloodGroup" disabled>
                 <option value="">Select Blood Group</option>
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
@@ -51,7 +51,7 @@
                 <option value="O-">O-</option>
             </select>
         </div>
-        <div class="col-12 d-flex justify-content-evenly">
+        <div class="col-12 d-flex justify-content-center gap-2">
             <button type="button" id="addPatient" class="btn btn-primary">Add</button>
             <button type="button" id="savePatient" class="btn btn-success">Save</button>
             <button type="button" id="searchPatient" class="btn btn-info">Search</button>
@@ -64,7 +64,7 @@
 <!-- Modal for displaying patient search results -->
 <div class="modal fade" id="patientSearchModal" tabindex="-1" aria-labelledby="patientSearchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+        <div class="modal-content" style="overflow-x:scroll;">
             <div class="modal-header">
                 <h5 class="modal-title" id="patientSearchModalLabel">Search Patients</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -112,6 +112,7 @@
                 { "data": "bloodGroup" }
             ]
         });
+        console.log(table.ajax.reload().draw());
         $('#patientDataTable tbody').on('click', 'tr', function () {
             var data = table.row(this).data();
             $('#patientID').val(data.patientID);
@@ -122,9 +123,15 @@
             $('#gender').val(data.gender);
             $('#maritalStatus').val(data.maritalStatus);
             $('#bloodGroup').val(data.bloodGroup);
+            $('form#patientForm').find(':input').not('#patientID').prop('disabled', false);
             $('#patientSearchModal').modal('hide');
         });
 
+        function clearForm(){
+            // Code to reset/cancel form
+            $('form#patientForm')[0].reset();
+            $('form#patientForm').find(':input').not('#patientID').not('button').prop('disabled', true);
+        }
 
 
         function saveOrUpdate(){
@@ -161,7 +168,9 @@
                         throw new Error('Please enter all the information.');
                     }
                     const verb = patientId == '' ? 'saved' : 'updated';
-                        toastr.success(`Patient data ${verb} successfully.`);
+                    toastr.success(`Patient data ${verb} successfully.`);
+                    table.ajax.reload().draw();
+                    $('form#patientForm').find(':input').not('#patientID').not('button').prop('disabled', true);
                 })
                 .catch(error => {
                     toastr.error(error.message);
@@ -170,12 +179,14 @@
         }
 
         $('#addPatient').click(function () {
-            saveOrUpdate();
+            // Reset the form to clear all inputs
+            $('form#patientForm')[0].reset();
+            
+            // Enable all form fields that may be disabled except for the patientID field
+            $('form#patientForm').find(':input').not('#patientID').prop('disabled', false);
         });
 
         $('#savePatient').click(function () {
-            var patientId = $('#patientID').val().trim();
-            if (!patientId) return;
             saveOrUpdate();
         });
 
@@ -196,7 +207,9 @@
                 method: 'DELETE',
             }).then(response => {
                     if (response.ok) {
-                        toastr.success('Patient deleted successfully')
+                        clearForm();
+                        toastr.success('Patient deleted successfully');
+                        table.ajax.reload().draw();
                     } else {
                         throw new Error('Something went wrong with the delete request');
                     }
@@ -208,10 +221,8 @@
         });
 
 
-        $('#cancel').click(function () {
-            // Code to reset/cancel form
-            $('form#patientForm')[0].reset();
-        });
+
+        $('#cancel').click(clearForm);
     });
 
 </script>
