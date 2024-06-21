@@ -42,8 +42,13 @@
             <select class="form-select" id="bloodGroup">
                 <option value="">Select Blood Group</option>
                 <option value="A+">A+</option>
+                <option value="A-">A-</option>
                 <option value="B+">B+</option>
-                <!-- Add other blood groups -->
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
             </select>
         </div>
         <div class="col-12 d-flex justify-content-evenly">
@@ -153,13 +158,13 @@
             fetch(apiEndpoint, payload)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
+                        throw new Error('Please enter all the information.');
                     }
                     const verb = patientId == '' ? 'saved' : 'updated';
                         toastr.success(`Patient data ${verb} successfully.`);
                 })
                 .catch(error => {
-                    toastr.error('Error saving patient data: ' + error.message);
+                    toastr.error(error.message);
                     console.error('Error:', error);
                 });
         }

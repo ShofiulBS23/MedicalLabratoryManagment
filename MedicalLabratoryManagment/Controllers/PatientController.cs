@@ -23,8 +23,11 @@ public class PatientController : Controller
     public async Task<IActionResult> AddPatient([FromBody] Patient dto)
     {
         try {
-            await _patientService.AddPatientAsync(dto);
-            return Ok();
+            if (dto != null) {
+                await _patientService.AddPatientAsync(dto);
+                return Ok();
+            }
+            return BadRequest("Please enter all the information.");
         } catch (Exception ex) {
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
