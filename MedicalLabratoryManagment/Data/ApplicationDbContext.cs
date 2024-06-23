@@ -13,5 +13,6 @@ namespace MedicalLabratoryManagment.Data
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Bill> Bills { get; set; }
         public DbSet<Test> Tests { get; set; }
+        public DbSet<OrderDetials> OrderDetials { get; set; }
     }
 }

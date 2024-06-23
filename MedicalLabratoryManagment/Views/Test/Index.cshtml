@@ -219,6 +219,7 @@
                 }).then(data => {
                     const verb = isNew ? 'added' : 'updated';
                     table.ajax.reload().draw();
+                    formEnable(true);
                     toastr.success(`Test ${verb} successfully!`)
                     })
                     .catch((error) => {
@@ -239,8 +240,9 @@
                     method: 'DELETE'
                 }).then(response => {
                         if (response.ok) {
-                        table.ajax.reload().draw();
-                            toastr.success('Test deleted successfully');
+                            table.ajax.reload().draw();
+                            formEnable(false);
+                            toastr.error('Test deleted successfully');
                         } else {
                             throw new Error('Failed to delete test');
                         }
