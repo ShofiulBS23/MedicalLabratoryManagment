@@ -61,9 +61,17 @@
         margin-top: 20px;
     }
 
+    /* Reduce vertical spacing */
 
+    div.dataTables_wrapper div.dataTables_info {
+        padding-top: 0px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        padding: 4px 8px 4px 8px;
+    }
+    /* End Reduce vertical spacing */
 </style>
-
 
 <section class="container">
     <h2 class="mb-4">Bills Details</h2>
@@ -107,7 +115,7 @@
                 </tbody>
             </table>
             <div class="d-flex justify-content-between mb-4">
-                <button id="btnAddTest" class="btn btn-primary">Add Test</button>
+                <button id="btnAddTest">Add Test</button>
                 <button id="btnAddPatient" class="btn btn-primary">Add Patient</button>
             </div>
         </div>
@@ -121,16 +129,91 @@
     </div>
 </section>
 
+<!-- Modal for Selecting Tests -->
+<div class="modal fade" id="testSelectionModal" tabindex="-1" aria-labelledby="testModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="testModalLabel">Select a Test</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="overflow-x:scroll;">
+                <table id="testsAvailableTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Test Name</th>
+                            <th>Price</th>
+                            <th>Test Type</th>
+                            <th>Sample Type</th>
+                            <th>Sample Unit</th>
+                            <th>Min Value</th>
+                            <th>Max Value</th>
+                            <th>Select</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-@section Scripts{
-    <script>
-        $(document).ready(function () {
-            $('#DGVBills, #AdditionalTable').DataTable({
-                "paging": true,
-                "searching": false
-            });
+<script>
+    $(document).ready(function () {
+        var billingTable = $('#DGVBills').DataTable({
+            "paging": true,
+            "searching": false
         });
 
-    </script>
-}
+        // Setup for testsAvailableTable
+        var testsTable = $('#testsAvailableTable').DataTable({
+            ajax: {
+                url: '/Test/GetAllTests',
+                dataSrc: ''
+            },
+            columns: [
+                { data: 'testID' },
+                { data: 'testName' },
+                { data: 'price' },
+                { data: 'testType' },
+                { data: 'sampleType' },
+                { data: 'sampleUnit' },
+                { data: 'minimumValue' },
+                { data: 'maximumValue' },
+                { data: null, defaultContent: '<button class="select-btn btn btn-primary">Select</button>' }
+            ]
+        });
+
+        // Handle row selection in testsAvailableTable
+        $('#testsAvailableTable tbody').on('click', 'button.select-btn', function () {
+            var data = testsTable.row($(this).parents('tr')).data();
+            billingTable.row.add([
+                data.testID,
+                data.testName,
+                data.price,
+                '<button class="delete-btn btn btn-danger">Delete</button>'
+            ]).draw(false);
+
+            // Close modal after selection
+            $('#testSelectionModal').modal('hide');
+        });
+
+        // Add delete functionality to DGVBills
+        $('#DGVBills tbody').on('click', 'button.delete-btn', function () {
+            billingTable.row($(this).parents('tr')).remove().draw();
+        });
+
+        $('#btnAddTest').click(() => {
+            $('#testSelectionModal').modal('show');
+        })
+
+    });
+</script>
