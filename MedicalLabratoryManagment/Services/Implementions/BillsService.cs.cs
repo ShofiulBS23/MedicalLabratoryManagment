@@ -21,7 +21,7 @@ public class BillsService : IBillsService
 
     public async Task<IEnumerable<Bill>> GetAllBillsAsync()
     {
-        return await _context.Bills.ToListAsync();
+        return await _context.Bills.Include(p => p.Patient).ToListAsync();
     }
 
     public async Task<Bill> AddBillAsync(Bill bill)

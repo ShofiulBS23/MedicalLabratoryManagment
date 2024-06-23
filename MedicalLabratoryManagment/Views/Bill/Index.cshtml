@@ -71,6 +71,11 @@
         padding: 4px 8px 4px 8px;
     }
     /* End Reduce vertical spacing */
+
+    :is(#patientDetailsTable_filter,#testsAvailableTable_filter) > label > input[type=search] {
+        position: relative;
+        right: 97px;
+    }
 </style>
 
 <section class="container">
@@ -135,7 +140,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="testModalLabel">Select a Test</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="hideModal()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -160,13 +165,51 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" onclick="hideModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patient Details Modal -->
+<div class="modal fade" id="patientDetailsModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="patientModalLabel">Patient Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="hidePatientModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="patientDetailsTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Bill No</th>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Bill Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded dynamically here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="hidePatientModal()">Close</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+
+    var hideModal = () => { $('#testSelectionModal').modal('hide') }
+    var hidePatientModal = () => { $('#patientDetailsModal').modal('hide'); }
+
     $(document).ready(function () {
         var billingTable = $('#DGVBills').DataTable({
             "paging": true,
@@ -175,6 +218,7 @@
 
         // Setup for testsAvailableTable
         var testsTable = $('#testsAvailableTable').DataTable({
+            autoWidth: false,
             ajax: {
                 url: '/Test/GetAllTests',
                 dataSrc: ''
@@ -215,5 +259,42 @@
             $('#testSelectionModal').modal('show');
         })
 
+
+        // Initialize DataTable for patient details within the modal
+        var patientDetailsTable = $('#patientDetailsTable').DataTable({
+            autoWidth: false,
+            ajax: {
+                url: 'Bill/GetAllBills',
+                dataSrc: ''
+            },
+            columns: [
+                { data: 'billNo' },
+                { data: 'patientID' },
+                { data: 'patient.patientName' },
+                { data: 'patient.age' },
+                { data: 'patient.gender' },
+                { data: 'billDate' },
+                { data: 'totalPrice', visible: false }  // This column will be hidden
+            ]
+        });
+
+        $('#patientDetailsTable tbody').on('click', 'tr', function () {
+            var data = patientDetailsTable.row(this).data();
+            // Format the date if needed
+            var formattedDate = data.billDate.replace(/\//g, '-');
+            // Populate the form with data from the table
+            $('#txtBill_No').val(data.billNo);
+            $('#txtPatient_ID').val(data.patientID);
+            $('#txtPatient_Name').val(data.patient.patientName);
+            $('#txtTprice').val(data.totalPrice);  // Now fetching the hidden TotalPrice
+            $('#txtDate').val(formattedDate);
+
+            // Optionally, hide the modal after selection
+            $('#patientDetailsModal').modal('hide');
+        });
+
+        $('#btnSearch').click(function () {
+            $('#patientDetailsModal').modal('show');
+        });
     });
 </script>
