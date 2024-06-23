@@ -161,7 +161,7 @@
 
             $('#searchTable tbody').on('click', 'tr', function () {
                 var data = table.row(this).data();  // Fetch the data for the clicked row
-                console.log(data);
+                
                 // Populate form fields using object property names
                 formEnable(true);
                 $('#testID').val(data.testID);
