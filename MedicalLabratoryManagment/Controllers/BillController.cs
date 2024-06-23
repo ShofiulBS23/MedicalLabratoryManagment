@@ -7,10 +7,14 @@ namespace MedicalLabratoryManagment.Controllers;
 public class BillController : Controller
 {
     private readonly IBillsService _billsService;
+    private readonly IOrderDetailService _orderDetailService;
 
-    public BillController(IBillsService billsService)
+    public BillController(
+        IBillsService billsService
+        , IOrderDetailService orderDetailService)
     {
         _billsService = billsService;
+        _orderDetailService = orderDetailService;
     }
 
     public async Task<IActionResult> Index()
@@ -52,6 +56,20 @@ public class BillController : Controller
     {
         await _billsService.DeleteBillAsync(billNo);
         return NoContent();
+    }
+    [HttpGet]
+    public async Task<ActionResult<List<OrderDetials>>> GetOrderDetailsByPatientAndBill(int patientId, int billNo)
+    {
+        try {
+            var orderDetails = await _orderDetailService.GetOrderDetailsByPatientAndBillAsync(patientId, billNo);
+
+            if (orderDetails == null || orderDetails.Count == 0)
+                return NotFound(new { Message = "No order details found for the given patient and bill ID." });
+
+            return Ok(orderDetails);
+        } catch (System.Exception ex) {
+            return StatusCode(500, new { Message = "An error occurred while retrieving order details.", Details = ex.Message });
+        }
     }
 }
 

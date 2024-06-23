@@ -1,0 +1,107 @@
+﻿<!-- Patient Details Modal -->
+<div class="modal fade" id="patientDetailsModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="patientModalLabel">Patient Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="hidePatientModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="patientDetailsTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Bill No</th>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Bill Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded dynamically here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="hidePatientModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(()=>{
+
+        function fetchOrderDetails(patiendId, billId) {
+            $.ajax({
+                url: '/Bill/GetOrderDetailsByPatientAndBill',
+                method: 'GET',
+                data: {
+                    billNo: billId,
+                    patientId: patiendId
+                },
+                dataType: 'json',
+                success: function (testData) {
+                    // Clear the old data
+                    billingTable.clear();
+
+                    // Add new data
+                    testData.forEach(function (test) {
+                        billingTable.row.add([
+                            test.testID,
+                            test.test.testName,
+                            test.price,
+                            '<button class="delete-btn btn btn-danger">Delete</button>'
+                        ]);
+                    });
+
+                    billingTable.draw();
+                },
+                error: function (error) {
+                    console.log('Error fetching tests:', error);
+                }
+            });
+
+        }
+
+
+        // Initialize DataTable for patient details within the modal
+        var patientDetailsTable = $('#patientDetailsTable').DataTable({
+            autoWidth: false,
+            ajax: {
+                url: 'Bill/GetAllBills',
+                dataSrc: ''
+            },
+            columns: [
+                { data: 'billNo' },
+                { data: 'patientID' },
+                { data: 'patient.patientName' },
+                { data: 'patient.age' },
+                { data: 'patient.gender' },
+                { data: 'billDate' },
+                { data: 'totalPrice', visible: false }  // This column will be hidden
+            ]
+        });
+
+        $('#patientDetailsTable tbody').on('click', 'tr', function () {
+            var data = patientDetailsTable.row(this).data();
+            // Format the date if needed
+            var formattedDate = data.billDate.replace(/\//g, '-');
+            // Populate the form with data from the table
+            $('#txtBill_No').val(data.billNo);
+            $('#txtPatient_ID').val(data.patientID);
+            $('#txtPatient_Name').val(data.patient.patientName);
+            $('#txtTprice').val(data.totalPrice);  // Now fetching the hidden TotalPrice
+            $('#txtDate').val(formattedDate);
+
+            fetchOrderDetails(data.patientID, data.billNo);
+
+
+            // Optionally, hide the modal after selection
+            $('#patientDetailsModal').modal('hide');
+        });
+    })
+</script>
