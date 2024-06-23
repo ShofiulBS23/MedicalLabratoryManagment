@@ -71,5 +71,17 @@ public class BillController : Controller
             return StatusCode(500, new { Message = "An error occurred while retrieving order details.", Details = ex.Message });
         }
     }
+
+    [HttpPost]
+    public async Task<IActionResult> SaveOrderDetailsAndTotalPrice([FromBody] OrderDetials orderDetails)
+    {
+        await _orderDetailService.AddOrderDetailAsync(orderDetails);
+        var bill = await _billsService.GetBillAsync(orderDetails.BillId ?? 0);
+        if (bill != null) {
+            bill.TotalPrice += orderDetails.Price;
+            await _billsService.UpdateBillAsync(bill);
+        }
+        return Ok();
+    }
 }
 

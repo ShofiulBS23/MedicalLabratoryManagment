@@ -85,11 +85,11 @@
             <form>
                 <div class="mb-3">
                     <label for="txtBill_No" class="form-label">Bill No:</label>
-                    <input type="text" class="form-control" id="txtBill_No" name="txtBill_No">
+                    <input type="text" class="form-control" id="txtBill_No" name="txtBill_No" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="txtPatient_ID" class="form-label">Patient ID:</label>
-                    <input type="text" class="form-control" id="txtPatient_ID" name="txtPatient_ID">
+                    <input type="text" class="form-control" id="txtPatient_ID" name="txtPatient_ID" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="txtPatient_Name" class="form-label">Patient Name:</label>
@@ -120,8 +120,8 @@
                 </tbody>
             </table>
             <div class="d-flex justify-content-between mb-4">
-                <button id="btnAddTest">Add Test</button>
-                <button id="btnAddPatient" class="btn btn-primary">Add Patient</button>
+                <button id="btnAddTest" disabled>Add Test</button>
+                <button id="btnAddPatient" class="btn btn-primary" disabled>Add Patient</button>
             </div>
         </div>
     </div>
@@ -149,7 +149,10 @@
 
         billingTable = $('#DGVBills').DataTable({
             "paging": true,
-            "searching": false
+            "searching": false,
+            'columnDefs': [
+                { 'visible': false, 'targets': [4, 5] }  // Hiding the MinValue and MaxValue columns
+            ]
         });
 
         $('#DGVBills tbody').on('click', 'button.delete-btn', function () {
@@ -163,5 +166,21 @@
         $('#btnSearch').click(function () {
             $('#patientDetailsModal').modal('show');
         });
+
+        $('#btnCancel').click(function () {
+            // Clear the form fields
+            $('#txtBill_No').val('');
+            $('#txtPatient_ID').val('');
+            $('#txtPatient_Name').val('');
+            $('#txtTprice').val('');
+            $('#txtDate').val('');
+
+            billingTable.clear().draw(); // This removes all rows and redraws the table
+
+            // Disable the cancelButton itself or any other buttons as needed
+            $('#btnAddTest').prop('disabled', true);
+            $('#btnAddPatient').prop('disabled', true);
+        });
+
     });
 </script>

@@ -35,28 +35,33 @@
 <script>
     $(document).ready(()=>{
 
-        function fetchOrderDetails(patiendId, billId) {
+        function fetchOrderDetails(patientId, billId) {
             $.ajax({
                 url: '/Bill/GetOrderDetailsByPatientAndBill',
                 method: 'GET',
                 data: {
                     billNo: billId,
-                    patientId: patiendId
+                    patientId: patientId
                 },
                 dataType: 'json',
                 success: function (testData) {
-                    // Clear the old data
                     billingTable.clear();
 
-                    // Add new data
+                    // Add new data with MinValue and MaxValue as hidden
                     testData.forEach(function (test) {
                         billingTable.row.add([
                             test.testID,
                             test.test.testName,
                             test.price,
-                            '<button class="delete-btn btn btn-danger">Delete</button>'
+                            '<button class="delete-btn btn btn-danger">Delete</button>',
+                            test.minivalue,  // Hidden
+                            test.maxvalue    // Hidden
                         ]);
                     });
+
+
+                    $('#btnAddTest').prop('disabled', false);
+                    $('#btnAddPatient').prop('disabled', false);
 
                     billingTable.draw();
                 },
@@ -66,6 +71,7 @@
             });
 
         }
+
 
 
         // Initialize DataTable for patient details within the modal
@@ -98,7 +104,6 @@
             $('#txtDate').val(formattedDate);
 
             fetchOrderDetails(data.patientID, data.billNo);
-
 
             // Optionally, hide the modal after selection
             $('#patientDetailsModal').modal('hide');

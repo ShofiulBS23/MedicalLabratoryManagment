@@ -60,15 +60,55 @@
         // Handle row selection in testsAvailableTable
         $('#testsAvailableTable tbody').on('click', 'button.select-btn', function () {
             var data = testsTable.row($(this).parents('tr')).data();
+
             billingTable.row.add([
                 data.testID,
                 data.testName,
                 data.price,
-                '<button class="delete-btn btn btn-danger">Delete</button>'
+                '<button class="delete-btn btn btn-danger">Delete</button>',
+                data.maximumValue,
+                data.minimumValue
             ]).draw(false);
+
+            // todo: MAKE A POST REQUEST TO '/Bill/SaveOrderDetails'
+
+            postOrderDetails(data);
 
             // Close modal after selection
             $('#testSelectionModal').modal('hide');
         });
     })
+
+    function postOrderDetails(orderDetails) {
+
+        const billId = $('#txtBill_No').val();
+        const patientId = $('#txtPatient_ID').val();
+        $.ajax({
+            url: '/Bill/SaveOrderDetailsAndTotalPrice',  // Ensure this URL matches your server's endpoint
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                testID: orderDetails.testID,
+                BillId: billId,
+                BillNo: billId,
+                PatientID: patientId,
+                Minivalue: orderDetails.minimumValue,
+                Maxvalue: orderDetails.maximumValue,
+                price: orderDetails.price
+            }),
+            success: function (response) {
+                const totalPrice = parseFloat($('#txtTprice').val());
+                const additionalPrice = parseFloat(orderDetails.price);
+                $('#txtTprice').val( totalPrice + additionalPrice );
+
+                console.log('Order detail saved:', response);
+                // Optionally, add notifications or update UI to reflect the addition
+            },
+            error: function (error) {
+                console.log('Error posting order details:', error.responseText);
+                // Handle errors (e.g., show an error message)
+            }
+        });
+    }
+
 </script>

@@ -1,6 +1,7 @@
 ﻿using MedicalLabratoryManagment.Data;
 using MedicalLabratoryManagment.Models;
 using MedicalLabratoryManagment.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace MedicalLabratoryManagment.Services.Implementions;
@@ -56,4 +57,6 @@ public class OrderDetailService : IOrderDetailService
             .Where(od => od.PatientID == patientId && od.BillId == billNo).Include(t => t.Test)
             .ToListAsync();
     }
+
+    //public async Task<IActionResult> SaveOrderDetailsAndUpdateTotalPrice()
 }
