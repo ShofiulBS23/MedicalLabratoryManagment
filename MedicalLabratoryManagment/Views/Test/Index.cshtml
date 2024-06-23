@@ -12,7 +12,6 @@
 
 
 </style>
-
 <div class="container">
     <div class="cardx">
         <h2>Test Data</h2>
@@ -21,45 +20,66 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label for="testID">Test ID:</label>
-                        <input type="text" class="form-control" id="testID" value="1">
+                        <input type="text" class="form-control" id="testID" disabled>
                     </div>
                     <div class="col-md-4">
                         <label for="testName">Test Name:</label>
-                        <input type="text" class="form-control" id="testName" value="HB">
+                        <input type="text" class="form-control" id="testName" disabled>
                     </div>
                     <div class="col-md-4">
                         <label for="sampleUnit">Sample Unit:</label>
-                        <input type="text" class="form-control" id="sampleUnit" value="fL">
+                        <select class="form-select" id="sampleUnit" disabled>
+                            <option value="fL">fL</option>
+                            <option value="%">%</option>
+                            <option value="g/dL">g/dL</option>
+                            <option value="L">L</option>
+                            <option value="mg/dL">mg/dL</option>
+                            <option value="mL">mL</option>
+                            <option value="uIU/mL">uIU/mL</option>
+                            <option value="uL">uL</option>
+                        </select>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <label for="testType">Test Type:</label>
-                        <select class="form-control" id="testType">
-                            <option>BIOCHEMSTRY</option>
-                            <option>OTHER</option>
+                        <select class="form-control" id="testType" disabled>
+                            <option value="URINE">URINE</option>
+                            <option value="STOOL">STOOL</option>
+                            <option value="HEMATOLOGY">HEMATOLOGY</option>
+                            <option value="SEROLOGY">SEROLOGY</option>
+                            <option value="BIOCHEMISTRY">BIOCHEMISTRY</option>
+                            <option value="HORMONE">HORMONE</option>
+                            <option value="TUMOR MARKERS">TUMOR MARKERS</option>
+                            <option value="DRUGS">DRUGS</option>
+                            <option value="MICROBIOLOGY">MICROBIOLOGY</option>
+                            <option value="BODY FLUIDS">BODY FLUIDS</option>
+                            <option value="BLOOD BANK">BLOOD BANK</option>
+                            <option value="OTHER">OTHER</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label for="sampleType">Sample Type:</label>
-                        <select class="form-control" id="sampleType">
-                            <option>Blood</option>
-                            <option>Urine</option>
+                        <select class="form-control" id="sampleType" disabled>
+                            <option value="Blood">Blood</option>
+                            <option value="Serum">Serum</option>
+                            <option value="Urine">Urine</option>
+                            <option value="Stool">Stool</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label for="minRange">Min Range:</label>
-                        <input type="text" class="form-control" id="minRange" value="10">
+                        <input type="number" class="form-control" id="minRange" min="0" disabled>
                     </div>
                     <div class="col-md-3">
                         <label for="maxRange">Max Range:</label>
-                        <input type="text" class="form-control" id="maxRange" value="30">
+                        <input type="number" class="form-control" id="maxRange" min="0" disabled>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label for="price">Price:</label>
-                        <input type="text" class="form-control" id="price" value="250">
+                        <input type="text" class="form-control" id="price" value="250" disabled>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -77,6 +97,7 @@
 </div>
 
 
+
 <!-- Existing Content -->
 <!-- Add this for the Modal -->
 <div class="modal" tabindex="-1" role="dialog" id="searchModal">
@@ -84,7 +105,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Search</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modalClose" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -108,8 +129,8 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="modalOk">Ok</button>
+                <button type="button" class="btn btn-secondary modalClose" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary modalClose" id="modalOk">Ok</button>
             </div>
         </div>
     </div>
@@ -122,52 +143,131 @@
         $(document).ready(function () {
 
             var table = $('#searchTable').DataTable({
-                // Optionally load data via Ajax or define within page
-                // ajax: 'path/to/data.json',
-                data: [ // Dummy data for example
-                    [1, "HB", "BIOCHEMISTRY", "Blood", "fL", 10, 30, 250],
-                    [2, "PCV", "HORMONE", "Uran", "L", 15, 30, 150],
-                    // Add more rows as needed
+                "ajax": {
+                    "url": "/Test/GetAllTests",  // API endpoint provided by your server
+                    "dataSrc": ""  // Assuming the server returns an array
+                },
+                "columns": [
+                    { "data": "testID" },
+                    { "data": "testName" },
+                    { "data": "testType" },
+                    { "data": "sampleType" },
+                    { "data": "sampleUnit" },
+                    { "data": "minimumValue" },
+                    { "data": "maximumValue" },
+                    { "data": "price" }
                 ]
             });
 
             $('#searchTable tbody').on('click', 'tr', function () {
-                var data = table.row(this).data();
-                $('#testID').val(data[0]);
-                $('#testName').val(data[1]);
-                $('#testType').val(data[2]);
-                $('#sampleType').val(data[3]);
-                $('#sampleUnit').val(data[4]);
-                $('#minRange').val(data[5]);
-                $('#maxRange').val(data[6]);
-                $('#price').val(data[7]);
+                var data = table.row(this).data();  // Fetch the data for the clicked row
+                console.log(data);
+                // Populate form fields using object property names
+                formEnable(true);
+                $('#testID').val(data.testID);
+                $('#testName').val(data.testName);
+                $('#testType').val(data.testType);
+                $('#sampleType').val(data.sampleType);
+                $('#sampleUnit').val(data.sampleUnit);
+                $('#minRange').val(data.minimumValue);
+                $('#maxRange').val(data.maximumValue);
+                $('#price').val(data.price);
                 $('#searchModal').modal('hide'); // Hide modal after selection
             });
 
-            $('#modalOk').click(function () {
+            
+
+            $('.modalClose').click(function () {
                 $('#searchModal').modal('hide');
             });
 
+            function formEnable(flag){
+                $('#testForm').find(':input').val('');
+                $('#testForm').find('select').prop('selectedIndex', 0);
+                $('#testForm').find(':input').not('#testID').not('button').prop('disabled', !flag);
+            }
 
+            function saveOrUpdate() {
+                // Collect all form data
+
+                const testId = $('#testID').val().trim();
+
+                const isNew = testId == '';
+
+                var formData = {
+                    testID: isNew ? 0 : testId,
+                    testName: $('#testName').val(),
+                    sampleUnit: $('#sampleUnit').val(),
+                    testType: $('#testType').val(),
+                    sampleType: $('#sampleType').val(),
+                    minimumValue: $('#minRange').val(),
+                    maximumValue: $('#maxRange').val(),
+                    price: $('#price').val()
+                };
+
+
+                const url = isNew ? '/Test/CreateTest' : '/Test/UpdateTest';
+                const method = isNew ? 'POST' : 'PUT';
+
+                // Send a POST request to the server with the form data
+                fetch(url, {  // Update the URL to your actual API endpoint
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                }).then(data => {
+                    const verb = isNew ? 'added' : 'updated';
+                    table.ajax.reload().draw();
+                    toastr.success(`Test ${verb} successfully!`)
+                    })
+                    .catch((error) => {
+                        toastr.success('Error:'+ error.message)
+                    });
+            }
+
+
+            function deleteTest() {
+
+                const testId = $('#testID').val().trim();
+                if(!testId){
+                    toastr.error('Invalid operation!');
+                    return;
+                }
+
+                fetch(`/Test/DeleteTest?id=${testId}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                        if (response.ok) {
+                        table.ajax.reload().draw();
+                            toastr.success('Test deleted successfully');
+                        } else {
+                            throw new Error('Failed to delete test');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
 
             // Implement button functionalities
             $('#testForm button').click(function (event) {
                 var buttonType = $(this).text();
                 switch (buttonType) {
                     case 'Save':
-                        alert('Save clicked');
+                        saveOrUpdate();
                         break;
                     case 'Search':
                         $('#searchModal').modal('show');
                         break;
                     case 'Add':
-                        alert('Add clicked');
+                        formEnable(true);
                         break;
                     case 'Delete':
-                        alert('Delete clicked');
+                        deleteTest();
                         break;
                     case 'Cancel':
-                        alert('Cancel clicked');
+                        formEnable(false);
                         break;
                 }
             });

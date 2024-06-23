@@ -40,17 +40,17 @@ public class TestController : Controller
         return CreatedAtAction(nameof(GetTest), new { id = createdTest.TestID }, createdTest);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTest(int id, [FromBody] Test test)
+    [HttpPut]
+    public async Task<IActionResult> UpdateTest([FromBody] Test test)
     {
-        if (id != test.TestID)
-            return BadRequest("Test ID mismatch");
+        if (test.TestID == 0)
+            return BadRequest("In valid operation");
 
         await _testService.UpdateTestAsync(test);
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete]
     public async Task<IActionResult> DeleteTest(int id)
     {
         await _testService.DeleteTestAsync(id);
