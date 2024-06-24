@@ -19,7 +19,13 @@ public class BillController : Controller
 
     public async Task<IActionResult> Index()
     {
-        return View();
+        try {
+            return View();
+        } catch(Exception ex) 
+        {
+            throw ex;
+        }
+       
     }
 
     public async Task<IActionResult> GetBill(int billNo)
@@ -37,10 +43,14 @@ public class BillController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddBill(Bill bill)
+    public async Task<IActionResult> AddBill([FromBody] Bill bill)
     {
-        var createdBill = await _billsService.AddBillAsync(bill);
-        return CreatedAtAction(nameof(GetBill), new { billNo = createdBill.BillNo }, createdBill);
+        if (bill.PatientID != 0) {
+            bill.BillDate = DateTime.Now.ToString("yyyy/MM/dd");
+            var createdBill = await _billsService.AddBillAsync(bill);
+            return Ok(createdBill);
+        }
+        return BadRequest();
     }
 
     [HttpPut]
@@ -57,6 +67,22 @@ public class BillController : Controller
         await _billsService.DeleteBillAsync(billNo);
         return NoContent();
     }
+
+    public async Task<bool> DeleteBillAndOrderDetailsAsync(int billNo)
+    {
+        var bill = await _context.Bills.Include(b => b.OrderDetails).FirstOrDefaultAsync(b => b.BillNo == billNo);
+        if (bill == null)
+            return false;
+
+        // Remove all related order details
+        _context.OrderDetails.RemoveRange(bill.OrderDetails);
+
+        // Remove the bill
+        _context.Bills.Remove(bill);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     [HttpGet]
     public async Task<ActionResult<List<OrderDetials>>> GetOrderDetailsByPatientAndBill(int patientId, int billNo)
     {
@@ -73,7 +99,7 @@ public class BillController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> SaveOrderDetailsAndTotalPrice([FromBody] OrderDetials orderDetails)
+    public async Task<IActionResult> UpdateOrderDetailsAndTotalPrice([FromBody] OrderDetials orderDetails)
     {
         await _orderDetailService.AddOrderDetailAsync(orderDetails);
         var bill = await _billsService.GetBillAsync(orderDetails.BillId ?? 0);

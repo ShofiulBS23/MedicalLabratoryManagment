@@ -101,7 +101,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="txtDate" class="form-label">Date:</label>
-                    <input type="date" class="form-control" id="txtDate" value="2024-06-21" disabled>
+                    <input type="date" class="form-control" id="txtDate" disabled>
                 </div>
             </form>
         </div>
@@ -135,13 +135,49 @@
 </section>
 
 <partial name="_TestSelectModal"/> 
-<partial name="_PatientDetailsModal"/> 
+<partial name="_PatientDetailsModal"/>
+@* <partial name="UserPatientModal" />
+ *@
+
+<!-- Modal (Hidden by default) -->
+<div id="patientModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Patient</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="hidePatientsModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="overflow-x:scroll;">
+                <table id="patientsTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Address</th>
+                            <th>Phone</th>
+                            <th>Gender</th>
+                            <th>Age</th>
+                            <th>Marital Status</th>
+                            <th>Blood Group</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data populated by DataTables JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <script>
 
     var hideModal = () => { $('#testSelectionModal').modal('hide') }
     var hidePatientModal = () => { $('#patientDetailsModal').modal('hide'); }
+    var hidePatientsModal = () => { $('#patientModal').modal('hide'); }
     var billingTable;
 
 
@@ -184,9 +220,23 @@
         $('#btnSearch').click(function () {
             $('#patientDetailsModal').modal('show');
         });
+        $('#btnSave').click(function () {
+
+            const billId = $('#txtBill_No').val().trim();
+            const patientId = $('#txtPatient_ID').val().trim();
+            if (!billId || !patientId) {
+                toastr.error('Select an ID');
+                return;
+            }
+
+            toastr.success('Data saved successfully');
+        });
 
         $('#btnCancel').click(function () {
             disableForm(true);
+        });
+        $('#btnAdd').click(function () {
+            disableForm(false);
         });
         $('#btnDelete').click(function () {
 
@@ -199,6 +249,56 @@
 
             disableForm(true);
         });
+
+
+        var table = $('#patientsTable').DataTable({
+            ajax: {
+                url: '/patient/all',
+                dataSrc: ''
+            },
+            columns: [
+                { data: 'patientID' },
+                { data: 'patientName' },
+                { data: 'address' },
+                { data: 'phoneNo' },
+                { data: 'gender' },
+                { data: 'age' },
+                { data: 'maritalStatus' },
+                { data: 'bloodGroup' }
+            ]
+        });
+
+        $('#patientsTable tbody').on('click', 'tr', function () {
+            var data = table.row(this).data();
+            disableForm(false);
+            $('#txtPatient_ID').val(data.patientID);
+            $('#txtPatient_Name').val(data.patientName);
+
+            var bill = {
+                PatientID: data.patientID,
+                TotalPrice: 0 // Assuming initial price is 0, modify as needed
+            };
+
+            // Fetch POST request to 'Bill/AddBill'
+            fetch('Bill/AddBill', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bill)
+            })
+                .then(response => response.json())
+                .then(createdBill => {
+                    $('#txtBill_No').val(createdBill.billNo);
+                    $('#patientModal').modal('hide');
+                })
+                .catch(error => console.error('Error:', error));
+
+        });
+
+        $('#btnAddPatient').click(()=>{
+            $('#patientModal').modal('show');
+        })
 
     });
 </script>

@@ -84,7 +84,7 @@
         const billId = $('#txtBill_No').val();
         const patientId = $('#txtPatient_ID').val();
         $.ajax({
-            url: '/Bill/SaveOrderDetailsAndTotalPrice',  // Ensure this URL matches your server's endpoint
+            url: '/Bill/UpdateOrderDetailsAndTotalPrice',  // Ensure this URL matches your server's endpoint
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
@@ -97,8 +97,13 @@
                 price: orderDetails.price
             }),
             success: function (response) {
-                const totalPrice = parseFloat($('#txtTprice').val());
-                const additionalPrice = parseFloat(orderDetails.price);
+                let totalPrice = parseFloat($('#txtTprice').val());
+                let additionalPrice = parseFloat(orderDetails.price);
+
+                totalPrice = isNaN(totalPrice) ? 0 : totalPrice;
+                additionalPrice = isNaN(additionalPrice) ? 0 : additionalPrice;
+
+
                 $('#txtTprice').val( totalPrice + additionalPrice );
 
                 console.log('Order detail saved:', response);
