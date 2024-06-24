@@ -8,4 +8,5 @@ public interface IBillsService
     Task<Bill> AddBillAsync(Bill bill);
     Task UpdateBillAsync(Bill bill);
     Task DeleteBillAsync(int billNo);
+    Task<bool> DeleteBillAndOrderDetailsAsync(int billNo);
 }

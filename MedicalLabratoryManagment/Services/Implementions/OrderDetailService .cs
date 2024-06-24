@@ -58,5 +58,10 @@ public class OrderDetailService : IOrderDetailService
             .ToListAsync();
     }
 
-    //public async Task<IActionResult> SaveOrderDetailsAndUpdateTotalPrice()
+    public async Task DeleteOrderDetailsByBillNoAsync(int billNo)
+    {
+        var orderDetails = await _context.OrderDetials.Where(od => od.BillNo == billNo).ToListAsync();
+        _context.OrderDetials.RemoveRange(orderDetails);
+        await _context.SaveChangesAsync();
+    }
 }

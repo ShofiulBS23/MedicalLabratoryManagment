@@ -8,10 +8,15 @@ namespace MedicalLabratoryManagment.Services.Implementions;
 public class BillsService : IBillsService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IOrderDetailService _orderDetailService;
 
-    public BillsService(ApplicationDbContext context)
+    public BillsService(
+        ApplicationDbContext context,
+         IOrderDetailService orderDetailService
+        )
     {
         _context = context;
+        _orderDetailService = orderDetailService;
     }
 
     public async Task<Bill> GetBillAsync(int billNo)
@@ -44,6 +49,20 @@ public class BillsService : IBillsService
             _context.Bills.Remove(bill);
             await _context.SaveChangesAsync();
         }
+    }
+    public async Task<bool> DeleteBillAndOrderDetailsAsync(int billNo)
+    {
+        // Delegate the deletion of order details to the order detail service
+        await _orderDetailService.DeleteOrderDetailsByBillNoAsync(billNo);
+
+        var bill = await _context.Bills.FindAsync(billNo);
+        if (bill == null) {
+            return false;
+        }
+
+        _context.Bills.Remove(bill);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }
 

@@ -10,4 +10,5 @@ public interface IOrderDetailService
     Task UpdateOrderDetailAsync(OrderDetials orderDetail);
     Task DeleteOrderDetailAsync(int detailId);
     Task<List<OrderDetials>> GetOrderDetailsByPatientAndBillAsync(int patientId, int billNo);
+    Task DeleteOrderDetailsByBillNoAsync(int billNo);
 }
