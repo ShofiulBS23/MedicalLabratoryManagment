@@ -36,32 +36,33 @@
 <section>
     <div class="container mt-3">
         <h2>User Settings</h2>
-        <div class="row">
+        <form class="row" id="user-settings-form">
             <div class="col-md-4">
                 <div class="form-group">
                     <label for="txtUserID">User ID:</label>
-                    <input type="text" class="form-control" id="txtUserID">
+                    <input type="text" class="form-control" id="txtUserID" disabled>
                 </div>
                 <div class="form-group">
                     <label for="txtUserName">User Name:</label>
-                    <input type="text" class="form-control" id="txtUserName">
+                    <input type="text" class="form-control" id="txtUserName" disabled>
                 </div>
                 <div class="form-group">
                     <label for="txtPassword">Password:</label>
-                    <input type="password" class="form-control" id="txtPassword">
+                    <input type="text" class="form-control" id="txtPassword" disabled>
                 </div>
                 <div class="form-group">
                     <label>Permission:</label><br>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="permission" id="RBUser" value="user">
+                        <input class="form-check-input" type="radio" name="permission" id="RBUser" value="User" disabled>
                         <label class="form-check-label" for="RBUser">User</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="permission" id="RBAdmin" value="admin">
+                        <input class="form-check-input" type="radio" name="permission" id="RBAdmin" value="Admin" disabled>
                         <label class="form-check-label" for="RBAdmin">Admin</label>
                     </div>
                 </div>
             </div>
+        
             <div class="col-md-8">
                 <div class="table-responsive">
                     <table id="DGVSettings" class="table table-striped table-bordered">
@@ -79,7 +80,7 @@
                     </table>
                 </div>
             </div>
-        </div>
+        </form>
         <div class="btn-group mt-3">
             <button id="btnAdd" class="btn btn-primary mr-2">Add</button>
             <button id="btnSave" class="btn btn-success mx-2">Save</button>
@@ -92,25 +93,135 @@
 
 @section Scripts{
     <script>
+
+        function disabledForm(enable) {
+            // Set the 'disabled' attribute based on the 'enable' flag
+            // Set the 'disabled' attribute based on the 'enable' flag and clear values
+            $('#txtUserID').val('');
+            $('#txtUserName').prop('disabled', enable).val('');
+            $('#txtPassword').prop('disabled', enable).val('');
+
+            // Disable or enable radio buttons and clear their selection if disabling
+            $('#RBUser').prop('disabled', enable).prop('checked', false);
+            $('#RBAdmin').prop('disabled', enable).prop('checked', false);
+
+        }
+
         $(document).ready(function () {
             // Initialize DataTable
-            $('#DGVSettings').DataTable();
+            var table = $('#DGVSettings').DataTable({
+                "ajax": {
+                    "url": "/UserSettings/GetAllUserSettings",
+                    "dataSrc": ""
+                },
+                "columns": [
+                    { "data": "userId" },
+                    { "data": "username" },
+                    { "data": "password" },
+                    { "data": "userType" }
+                ]
+            });
+
+
+            // Handle row click event
+            $('#DGVSettings tbody').on('click', 'tr', function () {
+                var data = table.row(this).data();
+                disabledForm(false);
+
+                $('#txtUserID').val(data.userId);
+                $('#txtUserName').val(data.username);
+                $('#txtPassword').val(data.password);
+
+                // Check the correct radio button based on the permission
+                if (data.userType.toLowerCase() === 'admin') {
+                    $('#RBAdmin').prop('checked', true);
+                } else {
+                    $('#RBUser').prop('checked', true);
+                }
+            });
 
             // Event handlers for buttons
             $('#btnAdd').click(function () {
-                // Add functionality
+                disabledForm(false);
             });
 
             $('#btnSave').click(function () {
-                // Save functionality
+                var settings = {
+                    UserId: $('#txtUserID').val().trim(),  // Get the User ID, trim any whitespace
+                    Username: $('#txtUserName').val().trim(),  // Get the User Name
+                    Password: $('#txtPassword').val().trim(),  // Get the Password
+                    UserType: $('input[name="permission"]:checked').val()  // Get the selected UserType (radio button)
+                };
+
+                // Define headers for the request
+                const headers = new Headers({
+                    'Content-Type': 'application/json'
+                });
+
+                // Determine whether to create a new setting or update an existing one
+                if (settings.UserId) {
+                    // UserID exists, perform update using PUT
+                    fetch('/UserSettings/UpdateUserSettings', {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify(settings)
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                toastr.success('User settings updated successfully.');
+                                $('#DGVSettings').DataTable().ajax.reload();
+                            } else {
+                                response.text().then(text => toastr.error('Error updating user settings: ' + text));
+                            }
+                        })
+                        .catch(error => toastr.error('Error updating user settings: ' + error));
+                } else {
+                    // UserID does not exist, perform create using POST
+                    settings.UserId = 0;
+                    fetch('/UserSettings/CreateUserSettings', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(settings)
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                toastr.success('New user settings created successfully.');
+                                $('#DGVSettings').DataTable().ajax.reload();
+                                disabledForm(true);
+                            } else {
+                                response.text().then(text => toastr.error('Error creating new user settings: ' + text));
+                            }
+                        })
+                        .catch(error => toastr.error('Error creating new user settings: ' + error));
+                }
             });
 
             $('#btnDelete').click(function () {
-                // Delete functionality
+                // Get the User ID from a field or data attribute
+                var userId = $('#txtUserID').val().trim(); // Assuming this is where you get the ID from
+                if (!userId) {
+                    toastr.error('Select an ID');
+                    return;
+                }
+                // Send DELETE request to the server
+                fetch(`/UserSettings/DeleteUserSettings/${userId}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            toastr.success(data.message);
+                            $('#DGVSettings').DataTable().ajax.reload(); // Reload the DataTable to reflect the deletion
+                            // Clear or reset any relevant fields here, if necessary
+                            disabledForm(true);
+                        }
+                    })
+                    .catch(error => {
+                        toastr.error('Error deleting user settings: ' + error.message);
+                    });
             });
-
             $('#btnCancel').click(function () {
-                // Cancel functionality
+                disabledForm(true);
             });
         });
     </script>

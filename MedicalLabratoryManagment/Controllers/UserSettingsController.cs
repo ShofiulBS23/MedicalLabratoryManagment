@@ -48,4 +48,19 @@ public class UserSettingsController : Controller
         _service.CreateUserSettings(settings);
         return CreatedAtAction(nameof(GetUserSettings), new { id = settings.UserId }, settings);
     }
+
+    [HttpDelete]
+    public IActionResult DeleteUserSettings(int id)
+    {
+        try {
+            _service.DeleteUserSettings(id);
+            return Ok(new { message = "User settings deleted successfully." });
+        } catch (InvalidOperationException ex) {
+            // Handle the case where the user was not found or could not be deleted
+            return NotFound(new { message = ex.Message });
+        } catch (Exception ex) {
+            // Handle other possible exceptions
+            return StatusCode(500, new { message = "An error occurred while deleting user settings.", error = ex.Message });
+        }
+    }
 }

@@ -36,5 +36,16 @@ public class UserSettingsService : IUserSettingsService
     {
         return _context.Users.ToList();
     }
+
+    public void DeleteUserSettings(int userId)
+    {
+        var user = _context.Users.Find(userId);
+        if (user != null) {
+            _context.Users.Remove(user);
+            _context.SaveChanges();
+        } else {
+            throw new InvalidOperationException("User not found.");
+        }
+    }
 }
 
