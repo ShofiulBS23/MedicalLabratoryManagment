@@ -61,6 +61,7 @@
                 },
                 success: function (response) {
                     toastr.success(response);
+                    window.location.pathname = '/main';
                 },
                 error: function (xhr, status, error) {
                     toastr.error('Login failed: ' + xhr.responseText);
