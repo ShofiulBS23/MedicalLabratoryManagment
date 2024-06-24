@@ -1,6 +1,7 @@
 ﻿using MedicalLabratoryManagment.Models;
 using MedicalLabratoryManagment.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedicalLabratoryManagment.Controllers;
 
@@ -64,23 +65,11 @@ public class BillController : Controller
     [HttpDelete]
     public async Task<IActionResult> DeleteBill(int billNo)
     {
-        await _billsService.DeleteBillAsync(billNo);
-        return NoContent();
-    }
-
-    public async Task<bool> DeleteBillAndOrderDetailsAsync(int billNo)
-    {
-        var bill = await _context.Bills.Include(b => b.OrderDetails).FirstOrDefaultAsync(b => b.BillNo == billNo);
-        if (bill == null)
-            return false;
-
-        // Remove all related order details
-        _context.OrderDetails.RemoveRange(bill.OrderDetails);
-
-        // Remove the bill
-        _context.Bills.Remove(bill);
-        await _context.SaveChangesAsync();
-        return true;
+        bool success = await _billsService.DeleteBillAndOrderDetailsAsync(billNo);
+        if (success)
+            return NoContent();
+        else
+            return NotFound("Bill not found.");
     }
 
     [HttpGet]

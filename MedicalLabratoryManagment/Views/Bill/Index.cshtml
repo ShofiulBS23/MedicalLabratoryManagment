@@ -239,15 +239,31 @@
             disableForm(false);
         });
         $('#btnDelete').click(function () {
-
             const billId = $('#txtBill_No').val().trim();
             const patientId = $('#txtPatient_ID').val().trim();
-            if(!billId || !patientId){
+            if (!billId || !patientId) {
                 toastr.error('Select an ID');
                 return;
             }
 
-            disableForm(true);
+            // Send POST request to delete the bill
+            fetch(`/Bill/DeleteBill?billNo=${billId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        toastr.success('Bill deleted successfully');
+                        disableForm(true);
+                    } else if (response.status === 404) {
+                        response.text().then(text => toastr.error(text));
+                    } else {
+                        toastr.error('Failed to delete bill');
+                    }
+                })
+                .catch(error => toastr.error('Network error: ' + error.message));
         });
 
 
