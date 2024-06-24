@@ -14,6 +14,10 @@ public class OrderDetials
     public decimal Minivalue { get; set; }
     [Column(TypeName = "decimal(18, 2)")]
     public decimal Maxvalue { get; set; }
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal Result { get; set; } = 0;
+    [MaxLength(20)]
+    public string State { get; set; } = String.Empty;
 
 
     // Navigation properties

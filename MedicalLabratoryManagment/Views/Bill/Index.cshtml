@@ -181,6 +181,44 @@
     var billingTable;
 
 
+    function fetchOrderDetails(patientId, billId) {
+        $.ajax({
+            url: '/Bill/GetOrderDetailsByPatientAndBill',
+            method: 'GET',
+            data: {
+                billNo: billId,
+                patientId: patientId
+            },
+            dataType: 'json',
+            success: function (testData) {
+                billingTable.clear();
+
+                // Add new data with MinValue and MaxValue as hidden
+                testData.forEach(function (test) {
+                    billingTable.row.add([
+                        test.testID,
+                        test.test.testName,
+                        test.price,
+                        '<button class="delete-btn btn btn-danger">Delete</button>',
+                        test.minivalue,  // Hidden
+                        test.maxvalue    // Hidden
+                    ]);
+                });
+
+
+                $('#btnAddTest').prop('disabled', false);
+                $('#btnAddPatient').prop('disabled', false);
+
+                billingTable.draw();
+            },
+            error: function (error) {
+                console.log('Error fetching tests:', error);
+            }
+        });
+
+    }
+
+
     function disableForm(flag) {
         const inputs = $("#billForm :input").not('#txtBill_No').not('#txtPatient_ID');
         inputs.prop("disabled", flag);

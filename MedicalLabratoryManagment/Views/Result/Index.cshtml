@@ -18,46 +18,62 @@
         margin-right: 5px;
     }
 
+    /* Reduce vertical spacing */
+
+    div.dataTables_wrapper div.dataTables_info {
+        padding-top: 0px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        padding: 4px 8px 4px 8px;
+    }
+    /* End Reduce vertical spacing */
+
+    :is(#patientDetailsTable_filter,#testsAvailableTable_filter) > label > input[type=search] {
+        position: relative;
+        right: 97px;
+    }
+
 
 </style>
 
 
 <section id="resultDetails" class="container">
     <div class="row">
-        <div class="col-md-6 col-12">
+        <form class="col-md-6 col-12" id="result-form">
             <h2 class="mb-3">Result Details</h2>
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label for="billNo">Bill No:</label>
-                    <input type="text" class="form-control" id="billNo" value="3">
+                    <input type="text" class="form-control" id="txtBill_No" disabled>
                 </div>
                 <div class="form-group col-md-12">
                     <label for="patientId">Patient ID:</label>
-                    <input type="text" class="form-control" id="patientId" value="3">
+                    <input type="text" class="form-control" id="txtPatient_ID" disabled>
                 </div>
                 <div class="form-group col-md-12">
                     <label for="patientName">Patient Name:</label>
-                    <input type="text" class="form-control" id="patientName" value="FAIZANlksdf">
+                    <input type="text" class="form-control" id="txtPatient_Name" disabled>
                 </div>
                 <div class="form-group col-md-12">
                     <label for="date">Date:</label>
-                    <input type="date" class="form-control" id="date" value="2024-06-21">
+                    <input type="date" class="form-control" id="dateResult" disabled>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label for="gender">Gender:</label>
-                    <select class="form-control" id="gender">
-                        <option>Female</option>
-                        <option>Male</option>
+                    <select class="form-control" id="genderResult" disabled>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
                     </select>
                 </div>
                 <div class="form-group col-md-12">
                     <label for="age">Age:</label>
-                    <input type="number" class="form-control" id="age" value="212">
+                    <input type="number" class="form-control" id="ageResult" disabled>
                 </div>
             </div>
-        </div>
+        </form>
         <div class="col-md-6 col-12">
             <div class="table-responsive">
                 <table class="table table-bordered table-sm" id="resultTable">
@@ -71,15 +87,7 @@
                             <th>Max Range</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>HB</td>
-                            <td><input type="text" class="form-control" value="fl"></td>
-                            <td>10</td>
-                            <td>30</td>
-                            <td>RBC</td>
-                            <td>20</td>
-                        </tr>
+                    <tbody>                 
                         <!-- More rows can be added similarly -->
                     </tbody>
                 </table>
@@ -87,22 +95,85 @@
         </div>
 
         <div class="form-group d-flex justify-content-end">
-            <button type="button" class="btn btn-secondary mr-2">Cancel</button>
-            <button type="button" class="btn btn-danger mr-2">Delete</button>
-            <button type="button" class="btn btn-warning mr-2">Search</button>
-            <button type="button" class="btn btn-success mr-2">Save</button>
-            <button type="button" class="btn btn-info mr-2">Add</button>
+            <button type="button" class="btn btn-secondary mr-2" id="cancelButton">Cancel</button>
+            <button type="button" class="btn btn-warning mr-2" id="searchId">Search</button>
+            <button type="button" class="btn btn-success mr-2" id="saveId">Save</button>
             <button type="button" class="btn btn-primary">Print</button>
         </div>
     </div>
 </section>
 
+<partial name="./../Bill/_PatientDetailsModal" />
 
 
 @section Scripts{
     <script>
+        var billingTable;
+
+        function disableForm(enable) {
+            // First, clear the billingTable if it exists
+            if (billingTable) {
+                billingTable.clear().draw();
+            } else {
+                console.log("Billing Table has not been initialized.");
+            }
+            // Clear all input fields within the form with ID 'result-form' and then disable/enable them
+            $('#result-form').find(':input').each(function () {
+                // Clear the input value
+                $(this).val('');
+            });
+            // Select all input controls inside the form with ID 'result-form', except for #txtBill_No
+            $('#result-form').find(':input').not('#txtBill_No').each(function () {
+                // Enable or disable based on the 'enable' parameter
+                $(this).prop('disabled', enable);
+            });
+        }
+
+        // Helper function to fetch data using an AJAX call
+        function fetchData(patientId, billingId) {
+            return $.ajax({
+                url: '/Bill/GetOrderDetailsByPatientAndBill',  // Updated API endpoint
+                method: 'GET',
+                dataType: 'json',  // Ensure that jQuery parses the response as JSON automatically
+                data: {
+                    patientId: patientId,
+                    billNo: billingId
+                }
+            });
+        }
+
+        function fetchOrderDetails(patientId, billingId) {
+            fetchData(patientId, billingId).done(function (data) {
+                billingTable.clear();  // Clear existing rows
+
+                if (data && data.length > 0) {
+                    data.forEach(function (item) {
+                        console.log(item);
+                        // Add new row for each item in the data array
+                        billingTable.row.add([
+                            item.test.testName,  // Adjust these properties to match your actual data properties
+                            item.result,
+                            item.test.sampleUnit,
+                            item.state,
+                            item.minivalue,
+                            item.maxvalue
+                        ]);
+                    });
+                    billingTable.draw();  // Redraw the table with new data
+                } else {
+                    // Handle the case where no data is returned
+                    console.log('No data available for the specified IDs');
+                }
+            }).fail(function (err) {
+                // Handle errors here
+                console.error('Error fetching data',err);
+            });
+        }
+
+        
+
         $(document).ready(function () {
-            $('#resultTable').DataTable({
+            billingTable = $('#resultTable').DataTable({
                 responsive: true,
                 "paging": true,  // Enable pagination
                 "ordering": true,  // Allow column sorting
@@ -112,6 +183,16 @@
 
             $('.btn-primary').click(function () {
                 window.print(); // Enable print button functionality
+            });
+            $('#searchId').click(function () {
+                $('#patientDetailsModal').modal('show');
+            });
+            $('#cancelButton').click(function () {
+                disableForm(true);
+            });
+            $('#saveId').click(function () {
+                disableForm(true);
+                toastr.success("Result saved successfully")
             });
         });
     </script>
