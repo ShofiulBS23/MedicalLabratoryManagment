@@ -94,6 +94,7 @@
 
         $('#patientDetailsTable tbody').on('click', 'tr', function () {
             var data = patientDetailsTable.row(this).data();
+            if (data) disableForm(false);
             // Format the date if needed
             var formattedDate = data.billDate.replace(/\//g, '-');
             // Populate the form with data from the table
@@ -102,7 +103,7 @@
             $('#txtPatient_Name').val(data.patient.patientName);
             $('#txtTprice').val(data.totalPrice);  // Now fetching the hidden TotalPrice
             $('#txtDate').val(formattedDate);
-
+            
             fetchOrderDetails(data.patientID, data.billNo);
 
             // Optionally, hide the modal after selection

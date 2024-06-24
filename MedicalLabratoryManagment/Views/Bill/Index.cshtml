@@ -82,7 +82,7 @@
     <h2 class="mb-4">Bills Details</h2>
     <div class="row">
         <div class="col-md-6">
-            <form>
+            <form id="billForm">
                 <div class="mb-3">
                     <label for="txtBill_No" class="form-label">Bill No:</label>
                     <input type="text" class="form-control" id="txtBill_No" name="txtBill_No" disabled>
@@ -93,15 +93,15 @@
                 </div>
                 <div class="mb-3">
                     <label for="txtPatient_Name" class="form-label">Patient Name:</label>
-                    <input type="text" class="form-control" id="txtPatient_Name" name="txtPatient_Name">
+                    <input type="text" class="form-control" id="txtPatient_Name" name="txtPatient_Name" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="txtTprice" class="form-label">Total Price:</label>
-                    <input type="text" class="form-control" id="txtTprice" name="txtTprice">
+                    <input type="text" class="form-control" id="txtTprice" name="txtTprice" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="txtDate" class="form-label">Date:</label>
-                    <input type="date" class="form-control" id="txtDate" value="2024-06-21">
+                    <input type="date" class="form-control" id="txtDate" value="2024-06-21" disabled>
                 </div>
             </form>
         </div>
@@ -144,6 +144,24 @@
     var hidePatientModal = () => { $('#patientDetailsModal').modal('hide'); }
     var billingTable;
 
+
+    function disableForm(flag) {
+        const inputs = $("#billForm :input").not('#txtBill_No').not('#txtPatient_ID');
+        inputs.prop("disabled", flag);
+        // Clear the form fields
+        $('#txtBill_No').val('');
+        $('#txtPatient_ID').val('');
+        $('#txtPatient_Name').val('');
+        $('#txtTprice').val('');
+        $('#txtDate').val('');
+
+        billingTable.clear().draw(); // This removes all rows and redraws the table
+
+        // Disable the cancelButton itself or any other buttons as needed
+        $('#btnAddTest').prop('disabled', flag);
+        $('#btnAddPatient').prop('disabled', flag);
+    }
+
     $(document).ready(function () {
         // Add delete functionality to DGVBills
 
@@ -168,18 +186,18 @@
         });
 
         $('#btnCancel').click(function () {
-            // Clear the form fields
-            $('#txtBill_No').val('');
-            $('#txtPatient_ID').val('');
-            $('#txtPatient_Name').val('');
-            $('#txtTprice').val('');
-            $('#txtDate').val('');
+            disableForm(true);
+        });
+        $('#btnDelete').click(function () {
 
-            billingTable.clear().draw(); // This removes all rows and redraws the table
+            const billId = $('#txtBill_No').val().trim();
+            const patientId = $('#txtPatient_ID').val().trim();
+            if(!billId || !patientId){
+                toastr.error('Select an ID');
+                return;
+            }
 
-            // Disable the cancelButton itself or any other buttons as needed
-            $('#btnAddTest').prop('disabled', true);
-            $('#btnAddPatient').prop('disabled', true);
+            disableForm(true);
         });
 
     });
